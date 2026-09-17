@@ -1,61 +1,471 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="ru">
 <head>
-    <title>Happy Birthday</title>
+    <title>Год вместе ❤️</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
+    <style>
+        /* ===== Замена Bootstrap — собственная сетка ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #fff0f5 0%, #ffe6f0 30%, #ffd9e8 60%, #fff0f5 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            color: #4e342e;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .row { display: flex; flex-wrap: wrap; justify-content: center; }
+
+        .col-12 { flex: 0 0 100%; max-width: 100%; }
+        .col-xl-3 { flex: 0 0 25%; max-width: 25%; }
+        .col-xl-6 { flex: 0 0 50%; max-width: 50%; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .text-center { text-align: center; }
+        .pt-5 { padding-top: 3rem; }
+
+        /* ===== Экран загрузки ===== */
+        .loader {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #fff0f5, #ffe6f0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s;
+        }
+
+        .loader.hidden { opacity: 0; pointer-events: none; }
+
+        #play {
+            padding: 18px 40px;
+            font-size: 20px;
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #ff8fa3, #ff5a7a);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255, 90, 122, 0.4);
+            transition: transform 0.3s, box-shadow 0.3s;
+            animation: pulseBtn 2s infinite;
+        }
+
+        #play:hover {
+            transform: scale(1.08);
+            box-shadow: 0 12px 35px rgba(255, 90, 122, 0.6);
+        }
+
+        @keyframes pulseBtn {
+            0%, 100% { box-shadow: 0 8px 25px rgba(255, 90, 122, 0.4); }
+            50% { box-shadow: 0 8px 40px rgba(255, 90, 122, 0.7); }
+        }
+
+        /* ===== Canvas конфетти ===== */
+        #confetti {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 500;
+        }
+
+        /* ===== Основной блок ===== */
+        .main {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+
+        .main.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== Баннер (CSS вместо img/banner.png) ===== */
+        .banner {
+            width: 100%;
+            max-width: 500px;
+            height: 180px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #ff8fa3, #ffb6c1, #ff6b8a);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 15px 40px rgba(255, 107, 138, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner-text {
+            font-size: 3rem;
+            color: white;
+            text-shadow: 0 3px 15px rgba(0,0,0,0.2);
+            z-index: 2;
+            animation: bannerPop 1.5s ease-out;
+        }
+
+        @keyframes bannerPop {
+            0% { transform: scale(0.3); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Декоративные сердечки на баннере */
+        .banner::before, .banner::after {
+            content: '❤️';
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.4;
+            animation: floatHeart 3s ease-in-out infinite;
+        }
+        .banner::before { top: 15px; left: 20px; }
+        .banner::after { bottom: 15px; right: 20px; animation-delay: 1.5s; }
+
+        @keyframes floatHeart {
+            0%, 100% { transform: translateY(0) rotate(-10deg); }
+            50% { transform: translateY(-10px) rotate(10deg); }
+        }
+
+        /* ===== Имя ===== */
+        .area {
+            font-size: 2.5rem;
+            color: #ff5a7a;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(255, 90, 122, 0.2);
+            animation: nameGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes nameGlow {
+            from { text-shadow: 0 2px 10px rgba(255, 90, 122, 0.2); }
+            to { text-shadow:  0 2px 20px rgba(255, 90, 122, 0.5); }
+        }
+
+        /* ===== Печатающийся текст ===== */
+        .type-wrap {
+            margin: 20px auto;
+            max-width: 600px;
+            min-height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #typed {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            color: #5d4037;
+            white-space: pre;
+            font-weight: normal;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 1.4rem;
+            background: #ff5a7a;
+            animation: blink 0.8s infinite;
+            margin-left: 3px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ===== Торт (CSS вместо img/cake.gif) ===== */
+        .cake {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .cake-emoji {
+            font-size: 5rem;
+            animation: cakeBounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        }
+
+        @keyframes cakeBounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-15px) scale(1.05); }
+        }
+
+        /* ===== Гирлянда шаров (CSS вместо Balloon-Border.png) ===== */
+        .balloon-border {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 30px;
+            padding: 0 20px;
+        }
+
+        .balloon {
+            font-size: 2.5rem;
+            animation: balloonFloat 3s ease-in-out infinite;
+        }
+        .balloon:nth-child(1) { animation-delay: 0s; }
+        .balloon:nth-child(2) { animation-delay: 0.3s; }
+        .balloon:nth-child(3) { animation-delay: 0.6s; }
+        .balloon:nth-child(4) { animation-delay: 0.9s; }
+        .balloon:nth-child(5) { animation-delay: 1.2s; }
+        .balloon:nth-child(6) { animation-delay: 1.5s; }
+        .balloon:nth-child(7) { animation-delay: 1.8s; }
+        .balloon:nth-child(8) { animation-delay: 2.1s; }
+
+        @keyframes balloonFloat {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
+        }
+
+        /* ===== Аудио (скрытый, без controls) ===== */
+        audio.song { display: none; }
+
+        /* ===== Снежинки-лепестки (замена magic-snowflakes) ===== */
+        .petal {
+            position: fixed;
+            top: -20px;
+            color: #ffb6c1;
+            pointer-events: none;
+            z-index: 50;
+            animation: petalFall linear forwards;
+        }
+
+        @keyframes petalFall {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) translateX(var(--drift)) rotate(360deg); opacity: 0.3; }
+        }
+
+        /* ===== Адаптив ===== */
+        @media (max-width: 480px) {
+            .banner-text { font-size: 2rem; }
+            .area { font-size: 2rem; }
+            #typed { font-size: 1.1rem; }
+            .cake-emoji { font-size: 4rem; }
+            .balloon { font-size: 2rem; }
+        }
+    </style>
+</head>
 <body>
-    <div class="container">
-        <div class="row">
-            <div class="loader">
-                <button id="play">Start</button>
-            </div>
-        </div>
+
+    <!-- Экран загрузки -->
+    <div class="loader" id="loader">
+        <button id="play">Начать ❤️</button>
     </div>
-    <audio class="song" controls loop>
-        <source src="music.mp3">
-        </source>
-        Your browser isn't invited for super fun audio time.
+
+    <!-- Музыка (замени src на свой файл, если есть) -->
+    <audio class="song" id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
+
+    <!-- Canvas для конфетти -->
     <canvas id="confetti"></canvas>
-    <div class="main">
+
+    <!-- Основной блок -->
+    <div class="main" id="main">
         <div class="container pt-5">
             <div class="row">
 
+                <!-- Баннер -->
                 <div class="col-12 col-xl-6 mx-auto">
-                    <img src="img/banner.png" alt="">
-                </div>
-
-                <div class="col-12  text-center">
-                    <div id="name" class="area">Gaurav</div>
-                </div>
-
-                <div class="col-12 text-center">
-                    <div class="type-wrap">
-                        <div id="typed-strings" class="typing">
-                            <h2>Happy Birthday <i id="nae">Gaurav</i></h2>
-                            <h2>Have a wonderful day</h2>
-                            <h2>Filled with joy and happiness.</h2>
-                        </div>
-                        <span id="typed" style="white-space:pre;"></span>
+                    <div class="banner">
+                        <span class="banner-text">1 Год Вместе</span>
                     </div>
                 </div>
 
+                <!-- Имя -->
+                <div class="col-12 text-center">
+                    <div id="name" class="area">Для Полиночки</div>
+                </div>
+
+                <!-- Печатающийся текст -->
+                <div class="col-12 text-center">
+                    <div class="type-wrap">
+                        <span id="typed"></span><span class="cursor" id="cursor"></span>
+                    </div>
+                </div>
+
+                <!-- Торт -->
                 <div class="col-12 col-xl-3 cake">
-                    <img src="img/cake.gif" alt="">
+                    <div class="cake-emoji">🎂</div>
                 </div>
             </div>
         </div>
-        <img src="img/Balloon-Border.png" width="100%" class="balloon-border">
-    </div>
-</body>
-<script src="https://unpkg.com/magic-snowflakes/dist/snowflakes.min.js"></script>
-<script src="js/jquery.js"></script>
-<script src="js/typed.min.js"></script>
-<script src="js/script.js"></script>
 
+        <!-- Гирлянда шаров -->
+        <div class="balloon-border">
+            <span class="balloon">🎈</span>
+            <span class="balloon">❤️</span>
+            <span class="balloon">🎈</span>
+            <span class="balloon">💕</span>
+            <span class="balloon">🎈</span>
+            <span class="balloon">❤️</span>
+            <span class="balloon">🎈</span>
+            <span class="balloon">💕</span>
+        </div>
+    </div>
+
+    <script>
+        // ===== Тексты для печатающегося эффекта =====
+        // Можешь изменить на свои!
+        const messages = [
+            'Ровно год вместе, Полиночка ❤️',
+            '365 дней счастья рядом с тобой',
+            'Каждый день — как первый, каждый — лучший',
+            'Я люблю тебя всё больше и больше',
+            'Спасибо за этот год. И за все будущие тоже 🥰'
+        ];
+
+        let msgIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        const typedEl = document.getElementById('typed');
+        const cursorEl = document.getElementById('cursor');
+
+        function typeEffect() {
+            const currentMsg = messages[msgIndex];
+
+            if (!isDeleting) {
+                typedEl.textContent = currentMsg.substring(0, charIndex + 1);
+                charIndex++;
+                if (charIndex === currentMsg.length) {
+                    isDeleting = true;
+                    setTimeout(typeEffect, 2500); // Пауза перед удалением
+                    return;
+                }
+                setTimeout(typeEffect, 70);
+            } else {
+                typedEl.textContent = currentMsg.substring(0, charIndex - 1);
+                charIndex--;
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    msgIndex = (msgIndex + 1) % messages.length;
+                    setTimeout(typeEffect, 500);
+                    return;
+                }
+                setTimeout(typeEffect, 35);
+            }
+        }
+
+        // ===== Конфетти на canvas =====
+        const canvas = document.getElementById('confetti');
+        const ctx = canvas.getContext('2d');
+        let confettiPieces = [];
+        const colors = ['#ff8fa3', '#ffb6c1', '#ff6b8a', '#ffd1e8', '#ff5a7a', '#ffc0cb'];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        function createConfetti() {
+            confettiPieces = [];
+            for (let i = 0; i < 150; i++) {
+                confettiPieces.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 4 - 2,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5,
+                    shape: Math.random() > 0.5 ? 'rect' : 'circle'
+                });
+            }
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confettiPieces.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                if (p.shape === 'rect') {
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+
+                if (p.y > canvas.height) {
+                    p.y = -20;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+            requestAnimationFrame(drawConfetti);
+        }
+
+        // ===== Падающие лепестки (замена magic-snowflakes) =====
+        function createPetals() {
+            for (let i = 0; i < 20; i++) {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+                petal.textContent = Math.random() > 0.5 ? '🌸' : '❤️';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                petal.style.animationDuration = (Math.random() * 6 + 6) + 's';
+                petal.style.animationDelay = (Math.random() * 6) + 's';
+                petal.style.setProperty('--drift', (Math.random() * 200 - 100) + 'px');
+                document.body.appendChild(petal);
+            }
+        }
+
+        // ===== Запуск всего =====
+        const playBtn = document.getElementById('play');
+        const loader = document.getElementById('loader');
+        const main = document.getElementById('main');
+        const bgMusic = document.getElementById('bgMusic');
+
+        playBtn.addEventListener('click', () => {
+            // Скрываем экран загрузки
+            loader.classList.add('hidden');
+            setTimeout(() => loader.style.display = 'none', 1000);
+
+            // Показываем основной блок
+            main.classList.add('visible');
+
+            // Запускаем музыку
+            bgMusic.play().catch(() => {});
+
+            // Запускаем печатающийся текст
+            typeEffect();
+
+            // Запускаем конфетти
+            createConfetti();
+            drawConfetti();
+
+            // Запускаем лепестки
+            createPetals();
+
+            // Повторяем конфетти через 5 секунд
+            setInterval(createConfetti, 5000);
+        });
+    </script>
+</body>
 </html>
